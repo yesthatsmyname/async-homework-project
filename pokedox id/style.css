@@ -7,7 +7,7 @@ body {
 }
 
 h1 {
-  color: #333;
+  color: white;
 }
 
 .search-container {
@@ -17,58 +17,64 @@ h1 {
 #pokemon-input {
   padding: 10px;
   font-size: 16px;
-  width: 200px;
+  width: 220px;
+  border-radius: 5px;
+  border: none;
 }
 
 #search-btn {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+  border: none;
+  border-radius: 5px;
 }
 
 #pokedex {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 .pokemon-card {
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  width: 300px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  width: 320px;
   padding: 20px;
-  margin: 10px;
-  text-align: center;
+}
+
+.pokemon-image {
+  width: 140px;
+  height: 140px;
 }
 
 .pokemon-name {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 10px;
-  text-transform: capitalize;
+  margin: 10px 0;
 }
 
 .pokemon-types {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .type {
-  padding: 5px 10px;
+  padding: 6px 14px;
   border-radius: 20px;
   margin: 0 5px;
-  color: #fff;
-  text-transform: capitalize;
+  color: white;
   font-weight: bold;
+  text-transform: capitalize;
 }
 
 .stats {
   text-align: left;
-  margin-top: 10px;
 }
 
 .stat {
-  margin: 5px 0;
+  margin: 6px 0;
+  font-size: 15px;
 }

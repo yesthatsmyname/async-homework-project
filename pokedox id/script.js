@@ -1,3 +1,38 @@
+const apiUrl = 'https://pokeapi.co/api/v2/pokemon/';
+
+const searchButton = document.getElementById('search-btn');
+const showAllButton = document.getElementById('show-all-btn');
+const inputField = document.getElementById('pokemon-input');
+const pokedexDiv = document.getElementById('pokedex');
+
+window.addEventListener('load', () => {
+  loadPokemon();
+});
+
+searchButton.addEventListener('click', () => {
+  const pokemonNameOrId = inputField.value.toLowerCase().trim();
+
+  if (pokemonNameOrId === 'smash or pass') {
+    window.open("https://youtu.be/gys9oDZj-MY?is=PlUH90EFwTBOI", "_blank");
+    return;
+  }
+
+  if (pokemonNameOrId) {
+    fetchPokemon(pokemonNameOrId);
+  }
+});
+
+showAllButton.addEventListener('click', () => {
+  inputField.value = '';
+  loadPokemon();
+});
+
+inputField.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    searchButton.click();
+  }
+});
+
 async function loadPokemon() {
   pokedexDiv.innerHTML = '';
 

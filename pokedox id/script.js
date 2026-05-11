@@ -4,7 +4,6 @@ const searchButton = document.getElementById('search-btn');
 const inputField = document.getElementById('pokemon-input');
 const pokedexDiv = document.getElementById('pokedex');
 
-// Search button click
 searchButton.addEventListener('click', () => {
   const pokemonNameOrId = inputField.value.toLowerCase().trim();
 
@@ -13,7 +12,6 @@ searchButton.addEventListener('click', () => {
   }
 });
 
-// Allow Enter key search
 inputField.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     searchButton.click();

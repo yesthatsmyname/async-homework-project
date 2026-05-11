@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
   text-align: center;
-  background-color: #22b622;
+  background-color: #57a8bd;
   margin: 0;
   padding: 20px;
 }
@@ -44,7 +44,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-  padding: 20px;
+  padding: 300px;
 }
 
 .pokemon-card {

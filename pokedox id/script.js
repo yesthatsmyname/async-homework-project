@@ -5,54 +5,82 @@ const showAllButton = document.getElementById('show-all-btn');
 const inputField = document.getElementById('pokemon-input');
 const pokedexDiv = document.getElementById('pokedex');
 
-window.addEventListener('load', () => {
-  loadPokemon();
+let allPokemon = [];
+
+// Load Pokémon on startup
+window.addEventListener('load', async () => {
+  await loadPokemonList();
+  loadPokemonCards(allPokemon);
 });
 
-searchButton.addEventListener('click', () => {
-  const pokemonNameOrId = inputField.value.toLowerCase().trim();
+// Load Pokémon list
+async function loadPokemonList() {
+  const response = await fetch(
+    'https://pokeapi.co/api/v2/pokemon?limit=151'
+  );
 
-  if (pokemonNameOrId === 'smash or pass') {
-    window.open("https://youtu.be/gys9oDZj-MY?is=PlUH90EFwTBOI", "_blank");
-    return;
-  }
+  const data = await response.json();
 
-  if (pokemonNameOrId) {
-    fetchPokemon(pokemonNameOrId);
-  }
-});
+  allPokemon = data.results;
+}
 
-showAllButton.addEventListener('click', () => {
-  inputField.value = '';
-  loadPokemon();
-});
-
-inputField.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    searchButton.click();
-  }
-});
-
-async function loadPokemon() {
+// Load cards
+async function loadPokemonCards(pokemonArray) {
   pokedexDiv.innerHTML = '';
 
-  for (let i = 1; i <= 1025; i++) {
-    try {
-      const response = await fetch(apiUrl + i);
-      const data = await response.json();
+  for (const pokemon of pokemonArray) {
+    const response = await fetch(pokemon.url);
+    const data = await response.json();
 
-      displayPokemon(data);
-
-    } catch (error) {
-      console.error(error);
-    }
+    createPokemonCard(data);
   }
 }
 
+// Live Search
+inputField.addEventListener('input', () => {
+  const searchText = inputField.value.toLowerCase().trim();
+
+  // Easter egg
+  if (searchText === 'smash or pass') {
+    window.open(
+      'https://youtu.be/gys9oDZj-MY?is=PlUH9Xl9OEFwTBOI',
+      '_blank'
+    );
+
+    inputField.value = '';
+    return;
+  }
+
+  if (searchText === '') {
+    loadPokemonCards(allPokemon);
+    return;
+  }
+
+  const filteredPokemon = allPokemon.filter(pokemon =>
+    pokemon.name.includes(searchText)
+  );
+
+  loadPokemonCards(filteredPokemon);
+});
+
+// Search button
+searchButton.addEventListener('click', async () => {
+  const searchText = inputField.value.toLowerCase().trim();
+
+  if (!searchText) return;
+
+  fetchPokemon(searchText);
+});
+
+// Show all
+showAllButton.addEventListener('click', () => {
+  inputField.value = '';
+  loadPokemonCards(allPokemon);
+});
+
+// Fetch one Pokémon
 async function fetchPokemon(nameOrId) {
   try {
-    pokedexDiv.innerHTML = '';
-
     const response = await fetch(apiUrl + nameOrId);
 
     if (!response.ok) {
@@ -61,64 +89,155 @@ async function fetchPokemon(nameOrId) {
 
     const data = await response.json();
 
-    displayPokemon(data);
+    showPokemonDetails(data);
 
   } catch (error) {
     alert(error.message);
   }
 }
 
-function displayPokemon(data) {
+// Small card view
+function createPokemonCard(data) {
   const card = document.createElement('div');
   card.className = 'pokemon-card';
 
-  const image = document.createElement('img');
-  image.src = data.sprites.front_default;
-  image.alt = data.name;
-  image.className = 'pokemon-image';
+  card.innerHTML = `
+    <img
+      src="${data.sprites.front_default}"
+      class="pokemon-image"
+    />
 
-  const name = document.createElement('div');
-  name.className = 'pokemon-name';
+    <h2 class="pokemon-name">
+      ${capitalize(data.name)}
+    </h2>
 
-  name.textContent =
-    data.name.charAt(0).toUpperCase() + data.name.slice(1);
+    <div class="pokemon-types">
+      ${data.types.map(typeInfo => `
+        <div
+          class="type"
+          style="background-color:${getTypeColor(typeInfo.type.name)}"
+        >
+          ${typeInfo.type.name}
+        </div>
+      `).join('')}
+    </div>
+  `;
 
-  const typesContainer = document.createElement('div');
-  typesContainer.className = 'pokemon-types';
-
-  data.types.forEach(typeInfo => {
-    const typeDiv = document.createElement('div');
-
-    typeDiv.className = 'type';
-
-    typeDiv.style.backgroundColor =
-      getTypeColor(typeInfo.type.name);
-
-    typeDiv.textContent = typeInfo.type.name;
-
-    typesContainer.appendChild(typeDiv);
+  // Click card for details
+  card.addEventListener('click', () => {
+    showPokemonDetails(data);
   });
-
-  const statsContainer = document.createElement('div');
-  statsContainer.className = 'stats';
-
-  data.stats.forEach(statInfo => {
-    const statDiv = document.createElement('div');
-
-    statDiv.className = 'stat';
-
-    statDiv.textContent =
-      `${statInfo.stat.name.toUpperCase()}: ${statInfo.base_stat}`;
-
-    statsContainer.appendChild(statDiv);
-  });
-
-  card.appendChild(image);
-  card.appendChild(name);
-  card.appendChild(typesContainer);
-  card.appendChild(statsContainer);
 
   pokedexDiv.appendChild(card);
+}
+
+// Detailed Pokédex View
+async function showPokemonDetails(data) {
+  pokedexDiv.innerHTML = '';
+
+  // Get species info
+  const speciesResponse = await fetch(data.species.url);
+  const speciesData = await speciesResponse.json();
+
+  // Get evolution chain
+  const evolutionResponse = await fetch(
+    speciesData.evolution_chain.url
+  );
+
+  const evolutionData = await evolutionResponse.json();
+
+  const evolutions = [];
+  extractEvolutions(evolutionData.chain, evolutions);
+
+  const detailCard = document.createElement('div');
+  detailCard.className = 'pokemon-detail-card';
+
+  detailCard.innerHTML = `
+    <button id="back-btn">
+      ← Back
+    </button>
+
+    <img
+      src="${data.sprites.front_default}"
+      class="detail-image"
+    />
+
+    <h1>
+      ${capitalize(data.name)}
+    </h1>
+
+    <div class="pokemon-types">
+      ${data.types.map(typeInfo => `
+        <div
+          class="type"
+          style="background-color:${getTypeColor(typeInfo.type.name)}"
+        >
+          ${typeInfo.type.name}
+        </div>
+      `).join('')}
+    </div>
+
+    <h3>Pokédex Info</h3>
+
+    <p>
+      <strong>Abilities:</strong>
+      ${data.abilities
+        .map(ability =>
+          capitalize(ability.ability.name)
+        )
+        .join(', ')}
+    </p>
+
+    <h3>Stats</h3>
+
+    ${data.stats.map(stat => `
+      <p>
+        ${stat.stat.name.toUpperCase()}:
+        ${stat.base_stat}
+      </p>
+    `).join('')}
+
+    <h3>Evolution Chain</h3>
+
+    <div class="evolution-container">
+      ${evolutions.map(name => `
+        <button class="evolution-btn">
+          ${capitalize(name)}
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  pokedexDiv.appendChild(detailCard);
+
+  document
+    .getElementById('back-btn')
+    .addEventListener('click', () => {
+      loadPokemonCards(allPokemon);
+    });
+
+  const evoButtons =
+    document.querySelectorAll('.evolution-btn');
+
+  evoButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      fetchPokemon(
+        button.textContent.toLowerCase()
+      );
+    });
+  });
+}
+
+function extractEvolutions(chain, evolutions) {
+  evolutions.push(chain.species.name);
+
+  chain.evolves_to.forEach(evolution => {
+    extractEvolutions(evolution, evolutions);
+  });
+}
+
+function capitalize(text) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function getTypeColor(type) {

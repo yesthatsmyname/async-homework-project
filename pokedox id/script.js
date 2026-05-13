@@ -7,13 +7,11 @@ const pokedexDiv = document.getElementById('pokedex');
 
 let allPokemon = [];
 
-// Load Pokémon on startup
 window.addEventListener('load', async () => {
   await loadPokemonList();
   loadPokemonCards(allPokemon);
 });
 
-// Load Pokémon list
 async function loadPokemonList() {
   const response = await fetch(
     'https://pokeapi.co/api/v2/pokemon?limit=151'
@@ -24,7 +22,6 @@ async function loadPokemonList() {
   allPokemon = data.results;
 }
 
-// Load cards
 async function loadPokemonCards(pokemonArray) {
   pokedexDiv.innerHTML = '';
 
@@ -36,11 +33,9 @@ async function loadPokemonCards(pokemonArray) {
   }
 }
 
-// Live Search
 inputField.addEventListener('input', () => {
   const searchText = inputField.value.toLowerCase().trim();
 
-  // Easter egg
   if (searchText === 'smash or pass') {
     window.open(
       'https://youtu.be/gys9oDZj-MY?is=PlUH9Xl9OEFwTBOI',
@@ -63,7 +58,6 @@ inputField.addEventListener('input', () => {
   loadPokemonCards(filteredPokemon);
 });
 
-// Search button
 searchButton.addEventListener('click', async () => {
   const searchText = inputField.value.toLowerCase().trim();
 
@@ -72,13 +66,11 @@ searchButton.addEventListener('click', async () => {
   fetchPokemon(searchText);
 });
 
-// Show all
 showAllButton.addEventListener('click', () => {
   inputField.value = '';
   loadPokemonCards(allPokemon);
 });
 
-// Fetch one Pokémon
 async function fetchPokemon(nameOrId) {
   try {
     const response = await fetch(apiUrl + nameOrId);
@@ -96,7 +88,6 @@ async function fetchPokemon(nameOrId) {
   }
 }
 
-// Small card view
 function createPokemonCard(data) {
   const card = document.createElement('div');
   card.className = 'pokemon-card';
@@ -123,7 +114,6 @@ function createPokemonCard(data) {
     </div>
   `;
 
-  // Click card for details
   card.addEventListener('click', () => {
     showPokemonDetails(data);
   });
@@ -131,15 +121,12 @@ function createPokemonCard(data) {
   pokedexDiv.appendChild(card);
 }
 
-// Detailed Pokédex View
 async function showPokemonDetails(data) {
   pokedexDiv.innerHTML = '';
 
-  // Get species info
   const speciesResponse = await fetch(data.species.url);
   const speciesData = await speciesResponse.json();
 
-  // Get evolution chain
   const evolutionResponse = await fetch(
     speciesData.evolution_chain.url
   );

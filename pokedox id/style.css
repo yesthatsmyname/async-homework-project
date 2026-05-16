@@ -134,3 +134,14 @@ h1 {
   color: white;
   font-weight: bold;
 }
+#evolution-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.evolution-card {
+  width: 150px;
+}

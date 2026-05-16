@@ -1,6 +1,5 @@
 const apiUrl = 'https://pokeapi.co/api/v2/pokemon/';
 
-const searchButton = document.getElementById('search-btn');
 const showAllButton = document.getElementById('show-all-btn');
 const inputField = document.getElementById('pokemon-input');
 const pokedexDiv = document.getElementById('pokedex');
@@ -33,7 +32,7 @@ async function loadPokemonCards(pokemonArray) {
   }
 }
 
-inputField.addEventListener('input', () => {
+inputField.addEventListener('input', async () => {
   const searchText = inputField.value.toLowerCase().trim();
 
   if (searchText === 'smash or pass') {
@@ -50,20 +49,31 @@ inputField.addEventListener('input', () => {
     loadPokemonCards(allPokemon);
     return;
   }
+  if (!isNaN(searchText)) {
+    try {
+      const response = await fetch(apiUrl + searchText);
 
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const data = await response.json();
+
+      pokedexDiv.innerHTML = '';
+      createPokemonCard(data);
+
+      return;
+
+    } catch {
+      pokedexDiv.innerHTML = '';
+      return;
+    }
+  }
   const filteredPokemon = allPokemon.filter(pokemon =>
     pokemon.name.includes(searchText)
   );
 
   loadPokemonCards(filteredPokemon);
-});
-
-searchButton.addEventListener('click', async () => {
-  const searchText = inputField.value.toLowerCase().trim();
-
-  if (!searchText) return;
-
-  fetchPokemon(searchText);
 });
 
 showAllButton.addEventListener('click', () => {
@@ -134,6 +144,7 @@ async function showPokemonDetails(data) {
   const evolutionData = await evolutionResponse.json();
 
   const evolutions = [];
+
   extractEvolutions(evolutionData.chain, evolutions);
 
   const detailCard = document.createElement('div');
@@ -186,13 +197,7 @@ async function showPokemonDetails(data) {
 
     <h3>Evolution Chain</h3>
 
-    <div class="evolution-container">
-      ${evolutions.map(name => `
-        <button class="evolution-btn">
-          ${capitalize(name)}
-        </button>
-      `).join('')}
-    </div>
+    <div id="evolution-container"></div>
   `;
 
   pokedexDiv.appendChild(detailCard);
@@ -203,16 +208,33 @@ async function showPokemonDetails(data) {
       loadPokemonCards(allPokemon);
     });
 
-  const evoButtons =
-    document.querySelectorAll('.evolution-btn');
+  const evolutionContainer =
+    document.getElementById('evolution-container');
 
-  evoButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      fetchPokemon(
-        button.textContent.toLowerCase()
-      );
+  for (const evolutionName of evolutions) {
+    const response = await fetch(apiUrl + evolutionName);
+    const evolutionData = await response.json();
+
+    const evolutionCard = document.createElement('div');
+    evolutionCard.className = 'pokemon-card evolution-card';
+
+    evolutionCard.innerHTML = `
+      <img
+        src="${evolutionData.sprites.front_default}"
+        class="pokemon-image"
+      />
+
+      <h2 class="pokemon-name">
+        ${capitalize(evolutionData.name)}
+      </h2>
+    `;
+
+    evolutionCard.addEventListener('click', () => {
+      showPokemonDetails(evolutionData);
     });
-  });
+
+    evolutionContainer.appendChild(evolutionCard);
+  }
 }
 
 function extractEvolutions(chain, evolutions) {
